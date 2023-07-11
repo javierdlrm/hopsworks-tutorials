@@ -1,4 +1,5 @@
 #These are the libraries you need to install to the Hopsworks cluster.
-tensorflow-recommenders==0.5.2
-tensorflow-addons==0.14.0
-catboost==1.0.6
+#tensorflow==2.11
+tensorflow-recommenders==0.7.3
+tensorflow-addons==0.20.0
+catboost #catboost==1.0.6
