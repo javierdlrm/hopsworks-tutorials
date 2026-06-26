@@ -1,9 +1,18 @@
+import os
 from functools import lru_cache
 
 import numpy as np
 import pandas as pd
 
 DEFAULT_MODEL_NAME = "all-MiniLM-L6-v2"
+
+# The default HuggingFace cache is $HOME/.cache/huggingface, but on Hopsworks $HOME points at a
+# read-only path (e.g. /srv/hops/anaconda), so downloads fail with PermissionError. Route the
+# cache to a writable /tmp directory. setdefault leaves any user-provided override in place.
+HF_CACHE_DIR = os.environ.get("HF_HOME") or "/tmp/hopsworks_hf_cache"
+os.makedirs(HF_CACHE_DIR, exist_ok=True)
+os.environ.setdefault("HF_HOME", HF_CACHE_DIR)
+os.environ.setdefault("SENTENCE_TRANSFORMERS_HOME", HF_CACHE_DIR)
 
 
 @lru_cache(maxsize=2)
@@ -19,7 +28,7 @@ def get_embedder(model_name: str = DEFAULT_MODEL_NAME):
     """
     from sentence_transformers import SentenceTransformer
 
-    return SentenceTransformer(model_name)
+    return SentenceTransformer(model_name, cache_folder=HF_CACHE_DIR)
 
 
 def embedding_dimension(model_name: str = DEFAULT_MODEL_NAME) -> int:
