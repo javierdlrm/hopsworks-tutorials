@@ -3,9 +3,9 @@
 <span style="font-width:bold; font-size: 1.4rem;"> This is a quick-start of the Hopsworks Feature Store; using a fraud use case you will load data into the feature store, create two feature groups from which we will make a training dataset, and train a model. This is an <b>online use case</b>, it will give you a high-level view of how to use our python APIs and the UI to navigate the feature groups, use them to create feature views, training datasets, save and deploy models using Hopsworks Feature Store. </span>
 
 ## **🗒️ This tutorial is divided into the following parts:**
-1. **Feature Pipeline**: How to load, engineer and create feature groups.
-2. **Training Pipeline**: How to build a feature view, training dataset split, train, save and deploy a model.
-3. **Inference Pipeline**: How to retrieve a trained model from the model registry and use it for online inference.
+1. **Feature Pipeline**: How to load, engineer and create feature groups, including two embedding features built with a SentenceTransformer.
+2. **Training Pipeline**: How to build a feature view, training dataset split, train, save and deploy a model, and configure model monitoring with drift-triggered re-training.
+3. **Inference Pipeline**: How to retrieve a trained model from the model registry, use it for online inference, and simulate embedding drift.
 4. **Streamlit App**: Build a Streamlit App for interactive predictions.
 
 ## Prerequisites
@@ -58,5 +58,13 @@ Hopsworks makes it easy to create datasets for model training.
 In the Hopsworks framework, training datasets are immutable in the sense that, in contrast to feature groups, you cannot append data to them after they have been created. However, you *can* have different *versions* of the same training dataset.
 
 Often, a training dataset will be created by running a query to join the feature groups of interest. This query is saved as metadata in the dataset, which makes it easy to see the dependencies between the dataset and the feature groups it originates from. The Hopsworks UI contains a dataset provenance graph that shows this.
+
+### Embedding Features
+
+A feature can also be a dense vector (an embedding) rather than a scalar. In this tutorial two payer-level embeddings are added: `payer_behavior_embedding` (the payer's long-term behavior) and `payer_transaction_sequence_embedding` (the payer's most recent activity). Each is produced by turning per-payer aggregates into a short text descriptor and encoding it with a SentenceTransformer. Embedding features are declared on a feature group through an `EmbeddingIndex`, which stores them in the vector database and enables similarity search.
+
+### Feature Monitoring
+
+Once a model is deployed and logging its inputs, Hopsworks can monitor its features for drift on a schedule. A detection window (recent inference data) is compared against a reference (the model's training dataset) using a metric, and a shift is flagged when the metric crosses a threshold. Embedding features use embedding-specific metrics: `centroid_distance` (distance between the detection and reference centroids) and distribution metrics over the embedding norm. A monitoring config can also trigger automated re-training: after a number of consecutive shifts, Hopsworks runs a re-training job.
 
 <!-- Moreover, you can download the dataset in a format compatible with the framework you're working with, e.g. tfrecords, numpy, csv... -->
